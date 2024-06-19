@@ -1,6 +1,6 @@
 package com.product.Services.Impl;
 
-import com.product.Product;
+import com.product.Entity.Product;
 import com.product.Services.ProductService;
 
 import java.util.ArrayList;

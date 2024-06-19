@@ -1,16 +1,28 @@
 package com.product.Services.Impl;
 
-import com.product.Product;
+import com.product.Entity.Product;
+import com.product.Entity.PurchasedProduct;
 import com.product.Services.FileHandler;
 import com.product.Services.ProductFileServices;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class ProductFileServiceImplementation implements ProductFileServices {
 
+    static long purchaseId = 0;
+
+    public ProductFileServiceImplementation(String filename, String purchaseFile) {
+
+        purchaseId = fileHandler.size(purchaseFile);
+        loadProductFile(filename);
+    }
+
+    private void loadProductFile(String filename) {
+
+        productList = fileHandler.readProductsFromCSV(filename);
+    }
 
     List<Product> productList = new ArrayList<>();
 
@@ -19,27 +31,13 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     @Override
     public void addProduct(Product product, String filename) {
 
-        boolean isEmpty = fileHandler.isFileEmpty(filename);
+        fileHandler.writeProductsToCSV(product, filename, true);
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
-            if (isEmpty) {
-                writer.write("ID,Name,Price,Quantity,isDeleted");
-                writer.newLine();
-            }
-
-            display(product);
-            writer.write(product.toString());
-            writer.newLine();
-
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
+        loadProductFile(filename);
     }
 
     @Override
     public Product viewProductById(long id, String fileName) {
-
-        productList = fileHandler.readProductsFromCSV(fileName);
 
         for(Product product : productList) {
 
@@ -59,55 +57,70 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
         productList = fileHandler.readProductsFromCSV(fileName);
         for(Product product : productList) {
-            if(!product.isDeleted()) {
-
                 display(product);
                 ++count;
-            }
         }
         return count ;
     }
 
     @Override
-    public void updateStockById(long id, long stock, String filename) {
+    public void updateById(long id, String field, String value, int updateType, String filename) {
 
-        List<Product> products = fileHandler.readProductsFromCSV(filename);
+        for (Product product : productList) {
 
-        for (Product product : products) {
             if (product.getProduct_id() == id) {
-                product.setProduct_stock(stock);
+
+                if(product.isDeleted()) {
+
+                    System.out.println("Product unavailable!");
+                    return;
+                }
+                if(field.equalsIgnoreCase("stock")) {
+
+                    try {
+
+                        if(updateType == 1) {
+
+                            product.setProduct_stock(product.getProduct_stock() + Long.parseLong(value));
+                        }
+                        else {
+
+                            product.setProduct_stock(Long.parseLong(value));
+                        }
+                    }
+                    catch (Exception exception) {
+
+                        System.out.println("Invalid stock value!");
+                    }
+                }
+                else if(field.equalsIgnoreCase("price")) {
+
+                    try {
+
+                        if(updateType == 1)
+                            product.setProduct_price(product.getProduct_price() + Double.parseDouble(value));
+                        else
+                            product.setProduct_price(Double.parseDouble(value));
+                    }
+                    catch (Exception exception) {
+
+                        System.out.println("Invalid price value!");
+                    }
+                }
                 break;
             }
         }
 
-        fileHandler.writeProductsToCSV(products, filename, false);
+        fileHandler.writeProductsToCSV(productList, filename, false);
     }
 
-    @Override
-    public void updatePriceById(long id, double price, String fileName) {
-
-        List<Product> products = fileHandler.readProductsFromCSV(fileName);
-
-        for (Product product : products) {
-            if (product.getProduct_id() == id) {
-                product.setProduct_price(price);
-                break;
-            }
-        }
-
-        fileHandler.writeProductsToCSV(products, fileName, false);
-    }
 
     @Override
     public boolean purchaseProduct(long id, int quantity, String productFile, String filename) {
 
-        List<Product> productList = fileHandler.readProductsFromCSV(productFile);
-        List<Product> purchaseList = fileHandler.readProductsFromCSV(filename);
-
         boolean found = false;
 
         if (quantity <= 0) {
-
             System.out.println("Invalid quantity");
             return false;
         }
@@ -125,35 +138,33 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                 }
                 if(product.getProduct_stock() >= quantity) {
 
-                    Product temp_product = product;
-                    temp_product.setProduct_stock(quantity);
+                    PurchasedProduct purchasedProduct = PurchasedProduct.builder()
+                            .productId(product.getProduct_id())
+                            .purchaseId(purchaseId++)
+                            .productName(product.getProduct_name())
+                            .productPrice(product.getProduct_price())
+                            .quantity(quantity)
+                            .totalPrice(quantity * product.getProduct_price())
+                            .build();
 
-                    purchaseList.add(temp_product);
                     product.setProduct_stock(product.getProduct_stock() - quantity);
 
-                    updateStockById(product.getProduct_id(), product.getProduct_stock(), productFile);
+                    updateById(product.getProduct_id(), "stock", Long.toString(product.getProduct_stock()), 0, productFile);
 
-                    fileHandler.writeProductsToCSV(purchaseList, filename, false);
+                    fileHandler.writeProductsToCSV(purchasedProduct, filename, true);
 
-                    System.out.printf("Name: %s%nPrice: %.2f%nStock: %d%nPurchasePrice: %2f%n",
-                            product.getProduct_name(),
-                            product.getProduct_price(),
-                            quantity,
-                            product.getProduct_price() * quantity);
+                    display(purchasedProduct);
+
                     System.out.println("Product purchase successfully");
+
                     return true;
                 }
                 else {
-
-
                     System.out.println("Product is out of stock");
                     return  false;
                 }
-
             }
-
         }
-
         if(!found) {
 
             System.out.println("Product not found");
@@ -164,9 +175,9 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     @Override
     public void getPurchaseProductList(String fileName) {
 
-        List<Product> purchaseList = fileHandler.readProductsFromCSV(fileName);
+        List<PurchasedProduct> purchaseList = fileHandler.readPurchasedProductsFromCSV(fileName);
 
-        for(Product product : purchaseList) {
+        for(PurchasedProduct product : purchaseList) {
 
             display(product);
         }
@@ -207,10 +218,30 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
     static void display(Product product) {
 
-        System.out.printf("Product Details:%nID: %d%nName: %s%nPrice: %.2f%nQuantity: %d%n",
+        System.out.printf("Product Details:%nID: %d%nName: %s%nPrice: %.2f%nQuantity: %d%nIsDeleted: %b%n",
                 product.getProduct_id(),
                 product.getProduct_name(),
                 product.getProduct_price(),
-                product.getProduct_stock());
+                product.getProduct_stock(),
+                product.isDeleted());
+        System.out.println();
     }
+
+    public static void display(PurchasedProduct product) {
+        System.out.printf("Purchased Product Details:%n" +
+                        "Purchase ID: %d%n" +
+                        "Product ID: %d%n" +
+                        "Product Name: %s%n" +
+                        "Quantity: %d%n" +
+                        "Product Price: %.2f%n" +
+                        "Total Price: %.2f%n",
+                product.getPurchaseId(),
+                product.getProductId(),
+                product.getProductName(),
+                product.getQuantity(),
+                product.getProductPrice(),
+                product.getTotalPrice());
+        System.out.println();
+    }
+
 }

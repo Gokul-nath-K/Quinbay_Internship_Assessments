@@ -1,9 +1,9 @@
 package com.product;
 
+import com.product.Entity.Product;
 import com.product.Services.FileHandler;
 import com.product.Services.Impl.ProductFileServiceImplementation;
 import com.product.Services.Impl.ProductServiceImplementation;
-import com.product.Services.ProductFileServices;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Scanner;
@@ -17,18 +17,16 @@ public class Main {
 
         Scanner sc = new Scanner(System.in);
 
-        final ProductServiceImplementation productServiceImplementation = new ProductServiceImplementation();
-
-        final ProductFileServiceImplementation productFileServiceImplementation = new ProductFileServiceImplementation();
-
         final FileHandler fileHandler = new FileHandler();
 
         final String fileName = "/Users/gokulnathk/Documents/product.csv";
         final String purchaseFileName = "/Users/gokulnathk/Documents/purchase.csv";
 
+        id = fileHandler.size(fileName);
 
-//        fileHandler.clearFile(fileName);
-//        fileHandler.clearFile(purchaseFileName);
+        final ProductServiceImplementation productServiceImplementation = new ProductServiceImplementation();
+
+        final ProductFileServiceImplementation productFileServiceImplementation = new ProductFileServiceImplementation(fileName, purchaseFileName);
 
         boolean useFile = true;
 
@@ -38,7 +36,7 @@ public class Main {
             flag = false;
 
             System.out.println("[1] Add new Product\n[2] View the Product\n[3] View all products\n[4] Update Stock\n[5] Update price\n[6] Purchase product\n[7] Remove product\n[8] View purchase list\n[9] Exit");
-            System.out.print("Enter your choice: ");
+            System.out.print("\nEnter your choice: ");
             int choice = sc.nextInt();
 
             switch (choice) {
@@ -110,13 +108,13 @@ public class Main {
                         System.out.println("Product list is empty! Please add product first");
                         break;
                     }
-                int count = productFileServiceImplementation.viewAllProducts(fileName);
+                    int count = productFileServiceImplementation.viewAllProducts(fileName);
 
-                if(count == 0) {
+                    if(count == 0) {
 
-                    System.out.println("Product list is empty! Please add product first");
-                    break;
-                }
+                        System.out.println("Product list is empty! Please add product first");
+                        break;
+                    }
                     break;
 
                 case 4:
@@ -138,6 +136,14 @@ public class Main {
                         break;
                     }
 
+                    System.out.println("Do you want to [1]update or [0]replace stock value: ");
+                    int updateType = sc.nextInt();
+
+                    if(updateType != 0 && updateType != 1) {
+                        System.out.println("Enter valid option!");
+                        break;
+                    }
+
                     System.out.println("Enter the new stock value: ");
                     long us_stock = sc.nextLong();
 
@@ -145,7 +151,7 @@ public class Main {
                         System.out.println("Enter valid stock value!");
                         break;
                     }
-                    productFileServiceImplementation.updateStockById(us_id, us_stock, fileName);
+                    productFileServiceImplementation.updateById(us_id, "stock", Long.toString(us_stock), updateType, fileName);
                     break;
 
                 case 5:
@@ -165,6 +171,14 @@ public class Main {
                         break;
                     }
 
+                    System.out.println("Do you want to [1]update or [0]replace price value: ");
+                    updateType = sc.nextInt();
+
+                    if(updateType != 0 && updateType != 1) {
+                        System.out.println("Enter valid option!");
+                        break;
+                    }
+
                     System.out.println("Enter the new price value: ");
                     long up_price = sc.nextLong();
 
@@ -172,7 +186,7 @@ public class Main {
                         System.out.println("Enter valid price!");
                         break;
                     }
-                    productFileServiceImplementation.updatePriceById(up_id, up_price, fileName);
+                    productFileServiceImplementation.updateById(up_id, "price", Long.toString(up_price), updateType, fileName);
                     break;
 
                 case 6:
@@ -183,7 +197,7 @@ public class Main {
                         break;
                     }
 
-                    System.out.println("Enter of product to be purchased: ");
+                    System.out.println("Enter productId of product to be purchased: ");
                     long p_id = sc.nextLong();
 
                     System.out.println("Enter the quantity: ");
@@ -230,8 +244,8 @@ public class Main {
         }
         while(flag);
 
-        fileHandler.clearFile(fileName);
-        fileHandler.clearFile(purchaseFileName);
+//        fileHandler.clearFile(fileName);
+//        fileHandler.clearFile(purchaseFileName);
 
     }
 }

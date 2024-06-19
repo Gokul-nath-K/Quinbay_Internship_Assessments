@@ -1,6 +1,6 @@
 package com.product.Services;
 
-import com.product.Product;
+import com.product.Entity.Product;
 
 public interface ProductFileServices {
 
@@ -10,9 +10,7 @@ public interface ProductFileServices {
 
     public int viewAllProducts(String fileName);
 
-    public void updateStockById(long id, long stock, String fileName);
-
-    public void updatePriceById(long id, double price, String fileName);
+    public void updateById(long id, String field, String value, int updateType, String filename);
 
     public boolean purchaseProduct(long id, int quantity, String productFile, String fileName);
 

@@ -151,7 +151,16 @@ public class Main {
                         System.out.println("Enter valid stock value!");
                         break;
                     }
-                    productFileServiceImplementation.updateById(us_id, "stock", Long.toString(us_stock), updateType, fileName);
+                    boolean isUpdated = productFileServiceImplementation.updateById(us_id, "stock", Long.toString(us_stock), updateType, fileName);
+
+                    if(isUpdated) {
+
+                        System.out.println("Updated successfully");
+                    }
+                    else {
+
+                        System.out.println("Update failed!");
+                    }
                     break;
 
                 case 5:

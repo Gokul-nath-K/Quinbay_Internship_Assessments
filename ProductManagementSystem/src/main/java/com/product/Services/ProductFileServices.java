@@ -10,7 +10,7 @@ public interface ProductFileServices {
 
     public int viewAllProducts(String fileName);
 
-    public void updateById(long id, String field, String value, int updateType, String filename);
+    public boolean updateById(long id, String field, String value, int updateType, String filename);
 
     public boolean purchaseProduct(long id, int quantity, String productFile, String fileName);
 

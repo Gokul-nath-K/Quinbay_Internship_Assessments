@@ -5,35 +5,65 @@ import com.product.Entity.PurchasedProduct;
 import com.product.Services.FileHandler;
 import com.product.Services.ProductFileServices;
 
-import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ProductFileServiceImplementation implements ProductFileServices {
 
     static long purchaseId = 0;
 
+    List<Product> productList = Collections.synchronizedList(new ArrayList<>());
+    List<PurchasedProduct> purchaseList = Collections.synchronizedList(new ArrayList<>());
+
+    FileHandler fileHandler = new FileHandler();
+
     public ProductFileServiceImplementation(String filename, String purchaseFile) {
 
         purchaseId = fileHandler.size(purchaseFile);
-        loadProductFile(filename);
+
+        Thread loadFileThread = new Thread(() -> {
+            System.out.println("\nRunning in thread: " + Thread.currentThread().getName());
+            loadProductFile(filename);
+            loadPurchaseFile(purchaseFile);
+        });
+
+        loadFileThread.setName("LoadFileThread");
+
+        loadFileThread.start();
     }
 
     private void loadProductFile(String filename) {
 
         productList = fileHandler.readProductsFromCSV(filename);
+
     }
 
-    List<Product> productList = new ArrayList<>();
+    private void loadPurchaseFile(String purchaseFile) {
 
-    FileHandler fileHandler = new FileHandler();
+        purchaseList = fileHandler.readPurchasedProductsFromCSV(purchaseFile);
+
+    }
 
     @Override
     public void addProduct(Product product, String filename) {
 
-        fileHandler.writeProductsToCSV(product, filename, true);
+        Thread fileWriterThread = new Thread(() -> {
+            System.out.println("Running in thread: " + Thread.currentThread().getName());
+            fileHandler.writeProductsToCSV(product, filename, true);
+            loadProductFile(filename);
+        });
 
-        loadProductFile(filename);
+        fileWriterThread.setName("FileWriterThread-AddProduct");
+
+        fileWriterThread.start();
+
+        try {
+            fileWriterThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
@@ -64,7 +94,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     }
 
     @Override
-    public void updateById(long id, String field, String value, int updateType, String filename) {
+    public boolean updateById(long id, String field, String value, int updateType, String filename) {
 
         for (Product product : productList) {
 
@@ -73,7 +103,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                 if(product.isDeleted()) {
 
                     System.out.println("Product unavailable!");
-                    return;
+                    return false;
                 }
                 if(field.equalsIgnoreCase("stock")) {
 
@@ -91,6 +121,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                     catch (Exception exception) {
 
                         System.out.println("Invalid stock value!");
+                        return false;
                     }
                 }
                 else if(field.equalsIgnoreCase("price")) {
@@ -105,18 +136,29 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                     catch (Exception exception) {
 
                         System.out.println("Invalid price value!");
+                        return false;
                     }
                 }
                 break;
             }
         }
 
-        fileHandler.writeProductsToCSV(productList, filename, false);
+        Thread fileWriterThread = new Thread(() -> {
+            System.out.println("Running in thread: " + Thread.currentThread().getName());
+            fileHandler.writeProductsToCSV(productList, filename, false);
+        });
+
+        fileWriterThread.setName("FileWriterThread-Update");
+
+        fileWriterThread.start();
+
+        return true;
+//        fileHandler.writeProductsToCSV(productList, filename, false);
     }
 
 
     @Override
-    public boolean purchaseProduct(long id, int quantity, String productFile, String filename) {
+    public boolean purchaseProduct(long id, int quantity, String productFile, String purchaseFile) {
 
         boolean found = false;
 
@@ -151,11 +193,20 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
                     updateById(product.getProduct_id(), "stock", Long.toString(product.getProduct_stock()), 0, productFile);
 
-                    fileHandler.writeProductsToCSV(purchasedProduct, filename, true);
+                    fileHandler.writeProductsToCSV(purchasedProduct, purchaseFile, true);
 
                     display(purchasedProduct);
 
                     System.out.println("Product purchase successfully");
+
+                    Thread loadFileThread = new Thread(() -> {
+                        System.out.println("\nRunning in thread: " + Thread.currentThread().getName());
+                        loadPurchaseFile(purchaseFile);
+                    });
+
+                    loadFileThread.setName("LoadFileThread");
+
+                    loadFileThread.start();
 
                     return true;
                 }
@@ -175,8 +226,6 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     @Override
     public void getPurchaseProductList(String fileName) {
 
-        List<PurchasedProduct> purchaseList = fileHandler.readPurchasedProductsFromCSV(fileName);
-
         for(PurchasedProduct product : purchaseList) {
 
             display(product);
@@ -194,7 +243,16 @@ public class ProductFileServiceImplementation implements ProductFileServices {
             }
         }
 
-        fileHandler.writeProductsToCSV(products, productFile, false);
+        Thread fileWriterThread = new Thread(() -> {
+            System.out.println("Running in thread: " + Thread.currentThread().getName());
+            fileHandler.writeProductsToCSV(productList, productFile, false);
+        });
+
+        fileWriterThread.setName("FileWriterThread-Remove");
+
+        fileWriterThread.start();
+
+//        fileHandler.writeProductsToCSV(products, productFile, false);
     }
 
     @Override

@@ -18,18 +18,16 @@ public class ProductServiceImplementation implements ProductService {
     }
 
     @Override
-    public Product viewProductById(long id) {
+    public void viewProductById(long id) {
 
         for(Product product : productList) {
 
-            if(product.getProduct_id() == id) {
+            if(product.getId() == id) {
 
                 display(product);
-                return product;
+                return;
             }
         }
-
-        return null;
 
     }
 
@@ -48,7 +46,7 @@ public class ProductServiceImplementation implements ProductService {
 
         for (Product product : productList) {
 
-            if (product.getProduct_id() == id) {
+            if (product.getId() == id) {
 
                 System.out.println("Before Update : ");
                 display(product);
@@ -64,7 +62,7 @@ public class ProductServiceImplementation implements ProductService {
 
         for(Product product : productList) {
 
-            if(product.getProduct_id() == id) {
+            if(product.getId() == id) {
 
                 System.out.println("Before Update : ");
                 display(product);
@@ -88,7 +86,7 @@ public class ProductServiceImplementation implements ProductService {
 
         for (Product product : productList) {
 
-            if (product.getProduct_id() == id) {
+            if (product.getId() == id) {
 
                 if(product.getProduct_stock() >= quantity) {
 
@@ -133,7 +131,7 @@ public class ProductServiceImplementation implements ProductService {
 
         for(Product product : productList) {
 
-            if(product.getProduct_id() == id) {
+            if(product.getId() == id) {
 
                 productToBeRemoved = product;
                 System.out.println("Removed: " + true);

@@ -14,7 +14,7 @@ import java.util.Arrays;
 public class PurchasedProduct {
 
     private long purchaseId;
-    private long productId;
+    private String productId;
     private String productName;
     private long quantity;
     private double productPrice;
@@ -38,7 +38,7 @@ public class PurchasedProduct {
         }
 
         long purchaseId = Long.parseLong(fields[0].trim());
-        long productId = Long.parseLong(fields[1].trim());
+        String productId = fields[1];
         String productName = fields[2].trim();
         long quantity = Long.parseLong(fields[3].trim());
         double productPrice = Double.parseDouble(fields[4].trim());

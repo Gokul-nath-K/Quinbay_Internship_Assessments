@@ -2,7 +2,7 @@ package com.product.Services.Impl;
 
 import com.product.Entity.Product;
 import com.product.Entity.PurchasedProduct;
-import com.product.Services.FileHandler;
+import com.product.Utils.FileHandler;
 import com.product.Services.ProductFileServices;
 
 import java.util.ArrayList;
@@ -71,7 +71,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
         for(Product product : productList) {
 
-            if(product.getProduct_id() == id && !product.isDeleted()) {
+            if(product.getId() == id && !product.isDeleted()) {
 
                 display(product);
                 return product;
@@ -98,7 +98,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
         for (Product product : productList) {
 
-            if (product.getProduct_id() == id) {
+            if (product.getId() == id) {
 
                 if(product.isDeleted()) {
 
@@ -153,7 +153,6 @@ public class ProductFileServiceImplementation implements ProductFileServices {
         fileWriterThread.start();
 
         return true;
-//        fileHandler.writeProductsToCSV(productList, filename, false);
     }
 
 
@@ -169,7 +168,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
         for (Product product : productList) {
 
-            if (product.getProduct_id() == id) {
+            if (product.getId() == id) {
 
                 found = true;
 
@@ -191,7 +190,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
                     product.setProduct_stock(product.getProduct_stock() - quantity);
 
-                    updateById(product.getProduct_id(), "stock", Long.toString(product.getProduct_stock()), 0, productFile);
+                    updateById(product.getId(), "stock", Long.toString(product.getProduct_stock()), 0, productFile);
 
                     fileHandler.writeProductsToCSV(purchasedProduct, purchaseFile, true);
 
@@ -235,10 +234,9 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     @Override
     public void removeProductById(long id, String productFile) {
 
-        List<Product> products = fileHandler.readProductsFromCSV(productFile);
 
-        for (Product product : products) {
-            if (product.getProduct_id() == id) {
+        for (Product product : productList) {
+            if (product.getId() == id) {
                 product.setDeleted(true);
             }
         }
@@ -251,8 +249,6 @@ public class ProductFileServiceImplementation implements ProductFileServices {
         fileWriterThread.setName("FileWriterThread-Remove");
 
         fileWriterThread.start();
-
-//        fileHandler.writeProductsToCSV(products, productFile, false);
     }
 
     @Override
@@ -264,7 +260,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
 
         for(Product product: products) {
 
-            if(product.getProduct_id() == id) {
+            if(product.getId() == id) {
                 found = true;
                 break;
             }
@@ -274,9 +270,10 @@ public class ProductFileServiceImplementation implements ProductFileServices {
     }
 
 
-    static void display(Product product) {
+    public void display(Product product) {
 
-        System.out.printf("Product Details:%nID: %d%nName: %s%nPrice: %.2f%nQuantity: %d%nIsDeleted: %b%n",
+        System.out.printf("Product Details:%nID: %d%nPROD_ID: %s%nName: %s%nPrice: %.2f%nQuantity: %d%nIsDeleted: %b%n",
+                product.getId(),
                 product.getProduct_id(),
                 product.getProduct_name(),
                 product.getProduct_price(),
@@ -284,6 +281,7 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                 product.isDeleted());
         System.out.println();
     }
+
 
     public static void display(PurchasedProduct product) {
         System.out.printf("Purchased Product Details:%n" +
@@ -301,5 +299,8 @@ public class ProductFileServiceImplementation implements ProductFileServices {
                 product.getTotalPrice());
         System.out.println();
     }
+
+
+
 
 }

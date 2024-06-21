@@ -1,4 +1,4 @@
-package com.product.Services;
+package com.product.Utils;
 
 import com.product.Entity.Product;
 import com.product.Entity.PurchasedProduct;
@@ -29,7 +29,7 @@ public class FileHandler {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename, append))) {
             if (isFileEmpty(filename)) {
-                writer.write("ID,Name,Price,Quantity,isDeleted");
+                writer.write("ID,Prod_ID,Name,Price,Quantity,isDeleted");
                 writer.newLine();
             }
             writer.write(product.toString());

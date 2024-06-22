@@ -24,15 +24,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-//        final FileHandler fileHandler = new FileHandler();
-//        final String fileName = "/Users/gokulnathk/Documents/product.csv";
-//        final String purchaseFileName = "/Users/gokulnathk/Documents/purchase.csv";
-//        id = fileHandler.size(fileName);
-//        final ProductServiceImplementation productServiceImplementation = new ProductServiceImplementation();
-//        final ProductFileServiceImplementation productFileServiceImplementation = new ProductFileServiceImplementation(fileName, purchaseFileName);
-//        boolean useFile = true;
-
-
         Scanner sc = new Scanner(System.in);
 
         DatabaseConnection app = new DatabaseConnection();
@@ -117,43 +108,10 @@ public class Main {
 
                     Product product = new Product("PROD", name, price, stock, false, categoryService.getCategoryById(cat_id));
 
-//                    Product product = inputHandler.addProductInput();
-
                     if(product == null)
                             break;
                     productDbService.addProduct(product);
                     break;
-//                    System.out.println("Enter name: ");
-//                    String name = sc.nextLine();
-//
-//                    System.out.println("Enter stock");
-//                    long stock = sc.nextLong();
-//
-//                    if(stock <= 0){
-//                        System.out.println("Enter valid stock value!");
-//                        break;
-//                    }
-//
-//                    System.out.println("Enter price: ");
-//                    double price = sc.nextDouble();
-//
-//                    if(price <= 0){
-//                        System.out.println("Enter valid price!");
-//                        break;
-//                    }
-//
-//                    Product product = new Product(++id, "prod_" + id,  name, price, stock, false);
-//
-//                    if(useFile) {
-//
-//                        productFileServiceImplementation.addProduct(product, fileName);
-//                    }
-//                    else {
-//
-//                        productServiceImplementation.addProduct(product);
-//                    }
-//
-//                    System.out.println("Product added successfully");
 
                 case 2:
 
@@ -167,14 +125,7 @@ public class Main {
 
                     break;
 
-//                    if(useFile) {
-//
-//                        product1 = productFileServiceImplementation.viewProductById(id, fileName);
-//                    }
-//                    else {
-//
-//                        productServiceImplementation.viewProductById(id);
-//                    }
+
 
                 case 3:
 
@@ -186,16 +137,6 @@ public class Main {
                         System.out.println("Product list is empty! Please add product first");
 
                     break;
-
-//                    if(fileHandler.isFileEmpty(fileName)) {
-//                        System.out.println("Product list is empty! Please add product first");
-//                        break;
-//                    }
-//                    int count = productFileServiceImplementation.viewAllProducts(fileName);
-//                    if(count == 0) {
-//                        System.out.println("Product list is empty! Please add product first");
-//                        break;
-//                    }
 
                 case 4:
 
@@ -235,48 +176,7 @@ public class Main {
                         System.out.println("Update failed!");
                     }
                     break;
-//                    if(fileHandler.isFileEmpty(fileName)) {
-//
-//                        System.out.println("Product list is empty! Please add product first");
-//                        break;
-//                    }
-//
-//
-//                    System.out.println("Enter product_id of product to be updated: ");
-//                    long us_id = sc.nextLong();
-//
-//                    if(!productFileServiceImplementation.isProductExist(us_id, fileName)) {
-//
-//                        System.out.println("Product not found");
-//                        break;
-//                    }
-//
-//                    System.out.println("Do you want to [1]update or [0]replace stock value: ");
-//                    int updateType = sc.nextInt();
-//
-//                    if(updateType != 0 && updateType != 1) {
-//                        System.out.println("Enter valid option!");
-//                        break;
-//                    }
-//
-//                    System.out.println("Enter the new stock value: ");
-//                    long us_stock = sc.nextLong();
-//
-//                    if(us_stock <= 0){
-//                        System.out.println("Enter valid stock value!");
-//                        break;
-//                    }
-//                    boolean isUpdated = productFileServiceImplementation.updateById(us_id, "stock", Long.toString(us_stock), updateType, fileName);
-//
-//                    if(isUpdated) {
-//
-//                        System.out.println("Updated successfully");
-//                    }
-//                    else {
-//
-//                        System.out.println("Update failed!");
-//                    }
-//                    break;
+
 
                 case 5:
 
@@ -315,62 +215,17 @@ public class Main {
                         System.out.println("Update failed!");
                     }
                     break;
-//                    if(fileHandler.isFileEmpty(fileName)) {
-//
-//                        System.out.println("Product list is empty! Please add product first");
-//                        break;
-//                    }
-//
-//                    System.out.println("Enter product_id of product to be updated: ");
-//                    long up_id = sc.nextLong();
-//
-//                    if(!productFileServiceImplementation.isProductExist(up_id, fileName)) {
-//
-//                        System.out.println("Product not found");
-//                        break;
-//                    }
-//
-//                    System.out.println("Do you want to [1]update or [0]replace price value: ");
-//                    updateType = sc.nextInt();
-//
-//                    if(updateType != 0 && updateType != 1) {
-//                        System.out.println("Enter valid option!");
-//                        break;
-//                    }
-//
-//                    System.out.println("Enter the new price value: ");
-//                    long up_price = sc.nextLong();
-//
-//                    if(up_price <= 0){
-//                        System.out.println("Enter valid price!");
-//                        break;
-//                    }
-//                    productFileServiceImplementation.updateById(up_id, "price", Long.toString(up_price), updateType, fileName);
-//                    break;
+
 
                 case 6:
 
                     List<OrderItemDTO> orderItems = inputHandler.getOrderInput();
                     orderDbService.purchaseProducts(orderItems);
-//                    if(fileHandler.isFileEmpty(fileName)) {
-//
-//                        System.out.println("Product list is empty! Please add product first");
-//                        break;
-//                    }
-//
-//                    System.out.println("Enter productId of product to be purchased: ");
-//                    long p_id = sc.nextLong();
-//
-//                    System.out.println("Enter the quantity: ");
-//                    int p_quantity = sc.nextInt();
-//
-//                    productFileServiceImplementation.purchaseProduct(p_id, p_quantity, fileName, purchaseFileName);
                     break;
 
                 case 8:
 
                     orderDbService.displayAllOrdersWithPurchasedProducts();
-//                    productFileServiceImplementation.getPurchaseProductList(purchaseFileName);
                     break;
 
                 case 7:
@@ -385,12 +240,6 @@ public class Main {
                     String id = sc.nextLine();
 
                     productDbService.removeProductById(id);
-//                    if(!productFileServiceImplementation.isProductExist(id, fileName)) {
-//
-//                        System.out.println("Product not found");
-//                        break;
-//                    }
-//                    productFileServiceImplementation.removeProductById(id, fileName);
                     break;
 
                 case 9:
@@ -414,9 +263,5 @@ public class Main {
 
         }
         while(flag);
-
-//        fileHandler.clearFile(fileName);
-//        fileHandler.clearFile(purchaseFileName);
-
     }
 }

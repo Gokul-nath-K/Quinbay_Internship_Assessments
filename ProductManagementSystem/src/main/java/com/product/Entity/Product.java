@@ -27,22 +27,4 @@ public class    Product {
         this.isDeleted = isDeleted;
         this.category = category;
     }
-
-
-    @Override
-    public String toString() {
-        return id + "," + product_id + "," + product_name + "," + product_price + "," + product_stock + "," + isDeleted;
-    }
-
-    public static Product fromCSV(String csvLine) {
-        String[] fields = csvLine.split(",");
-        long id = Long.parseLong(fields[0]);
-        String product_id = fields[1];
-        String name = fields[2];
-        double price = Double.parseDouble(fields[3]);
-        long quantity = Long.parseLong(fields[4]);
-        boolean isDeleted = Boolean.parseBoolean(fields[5]);
-//        return new Product(id, product_id, name, price, quantity, isDeleted);
-        return null;
-    }
 }

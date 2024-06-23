@@ -6,6 +6,8 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.product.Entity.Category;
 import com.product.Entity.Product;
+import com.product.Main;
+import com.product.Services.ProductDbServices;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -14,7 +16,7 @@ import java.util.List;
 
 import static com.product.Utils.DatabaseConnection.getDatabase;
 
-public class ProductDbServiceImpl {
+public class ProductDbServiceImpl implements ProductDbServices {
 
     static int id;
 
@@ -72,12 +74,27 @@ public class ProductDbServiceImpl {
         if (productDoc != null) {
             return productDoc.getDouble("product_price");
         } else {
-            System.out.println("Product not found with product_id: " + productId);
+            return null;
+        }
+    }
+
+    public Long getProductQuantity(String productId) {
+
+        Document query = new Document("product_id", productId);
+
+        Document productDoc = productCollection.find(query).first();
+
+        if (productDoc != null) {
+            return productDoc.getLong("product_stock");
+        } else {
             return null;
         }
     }
 
     public void addProduct(Product product) {
+
+        if (product ==null)
+            return;
 
         Document categoryDoc = new Document()
                 .append("id", product.getCategory().getId())
@@ -96,40 +113,64 @@ public class ProductDbServiceImpl {
         long id = objectIdToLong(productDoc.getObjectId("_id"));
         product.setId(id);
 
-        System.out.println("Product added with id: " + id);
+        System.out.println("Product added with id: " + productDoc.getString("product_id") + "\n");
     }
 
 
     public boolean updateById(String id, String field, String value, int updateType) {
-
-
         Document query = new Document("product_id", id);
-        Document productDoc = productCollection.find(query).first();
 
-        if (productDoc == null) {
-            System.out.println("Product not found with id: " + id);
-            return false;
-        }
-
-        boolean isDeleted = productDoc.getBoolean("isDeleted", false);
-        if (isDeleted) {
-            System.out.println("Product unavailable!");
-            return false;
-        }
+        long quantity = getProductQuantity(id);
 
         Document update = new Document();
         try {
             if (field.equalsIgnoreCase("stock")) {
                 long stock = Long.parseLong(value);
                 if (updateType == 1) {
-                    update = new Document("$inc", new Document("product_stock", stock));
+
+                    System.out.println("Enter updation type: ");
+                    System.out.println("1.Increment");
+                    System.out.println("2.Decrement");
+                    int type = Main.sc.nextInt();
+                    if(type == 1) {
+
+                        update = new Document("$inc", new Document("product_stock", stock));
+                    }
+                    else {
+
+                        if(quantity < stock) {
+
+                            System.out.println("Insufficient stock to reduce!");
+                            return false;
+                        }
+                        update = new Document("$inc", new Document("product_stock", -stock));
+                    }
+
                 } else {
                     update = new Document("$set", new Document("product_stock", stock));
                 }
             } else if (field.equalsIgnoreCase("price")) {
                 double price = Double.parseDouble(value);
                 if (updateType == 1) {
-                    update = new Document("$inc", new Document("product_price", price));
+
+                    System.out.println("Enter updation type: ");
+                    System.out.println("1.Increment");
+                    System.out.println("2.Decrement");
+                    int type = Main.sc.nextInt();
+
+                    if(type == 1) {
+
+                        update = new Document("$inc", new Document("product_price", price));
+                    }
+                    else {
+
+                        if(quantity < price) {
+
+                            System.out.println("Price cannot be updated beyond zero!");
+                            return false;
+                        }
+                        update = new Document("$inc", new Document("product_price", -price));
+                    }
                 } else {
                     update = new Document("$set", new Document("product_price", price));
                 }
@@ -215,6 +256,13 @@ public class ProductDbServiceImpl {
     }
 
 
+    public Document isProductExist(String id) {
+
+        Document query = new Document("product_id", id);
+        return productCollection.find(query).first();
+    }
+
+    @SuppressWarnings("MalformedFormatString")
     public void display(Product product) {
 
         System.out.printf("Product Details:%nID: %d%nPROD_ID: %s%nName: %s%nPrice: %.2f%nQuantity: %d%nIsDeleted: %b%n",

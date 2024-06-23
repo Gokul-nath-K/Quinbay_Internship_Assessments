@@ -3,6 +3,7 @@ package com.product.Services.Impl;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.product.Entity.Category;
+import com.product.Services.CategoryServices;
 import com.product.Utils.DatabaseConnection;
 import org.bson.Document;
 
@@ -12,7 +13,7 @@ import java.util.List;
 import static com.mongodb.client.model.Filters.eq;
 
 
-public class CategoryServiceImpl {
+public class CategoryServiceImpl implements CategoryServices {
 
     DatabaseConnection databaseConnection;
     MongoDatabase db;

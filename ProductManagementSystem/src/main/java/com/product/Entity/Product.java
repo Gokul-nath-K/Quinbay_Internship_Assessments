@@ -20,7 +20,7 @@ public class    Product {
 
 
     public Product(String productIdPrefix, String productName, double productPrice, long productStock, boolean isDeleted, Category category) {
-        this.product_id = productIdPrefix + "_";
+        this.product_id = productIdPrefix;
         this.product_name = productName;
         this.product_price = productPrice;
         this.product_stock = productStock;

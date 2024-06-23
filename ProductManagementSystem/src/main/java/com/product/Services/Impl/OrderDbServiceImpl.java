@@ -5,13 +5,15 @@ import com.product.Dto.OrdersDTO;
 import com.product.Entity.Orders;
 import com.product.Entity.Product;
 import com.product.Entity.PurchasedProduct;
+import com.product.Services.OrderDbServices;
 import com.product.Utils.DatabaseConnection;
 
+import javax.swing.text.Document;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OrderDbServiceImpl {
+public class OrderDbServiceImpl implements OrderDbServices {
 
 
 
@@ -67,6 +69,12 @@ public class OrderDbServiceImpl {
 
             conn.commit(); // Commit transaction
             System.out.println("Order placed successfully!");
+            for(OrderItemDTO orderItem : products) {
+
+                productDbService.updateById(orderItem.getId(), "stock",
+                        new String(String.valueOf(productDbService.getProductQuantity(orderItem.getId()) - orderItem.getQuantity())), 0);
+            }
+
 
         } catch (SQLException e) {
             if (conn != null) {
@@ -85,6 +93,29 @@ public class OrderDbServiceImpl {
     private static final String SELECT_ALL_ORDERS_SQL = "SELECT id, total_price, no_of_items, order_status, ordered_on, updated_on FROM orders";
     private static final String SELECT_PURCHASED_PRODUCTS_BY_ORDER_ID_SQL = "SELECT id, product_id, quantity, price, order_id FROM ordered_items WHERE order_id = ?";
 
+    public List<Orders> getOrderList() {
+
+        List<Orders> ordersList = new ArrayList<>();
+        try (PreparedStatement orderStmt = conn.prepareStatement(SELECT_ALL_ORDERS_SQL);
+             ResultSet orderRs = orderStmt.executeQuery()) {
+
+            while (orderRs.next()) {
+                Orders order = Orders.builder()
+                        .id(orderRs.getLong("id"))
+                        .totalPrice(orderRs.getDouble("total_price"))
+                        .numberOfItems(orderRs.getLong("no_of_items"))
+                        .orderStatus(orderRs.getString("order_status"))
+                        .orderedOn(orderRs.getDate("ordered_on"))
+                        .updatedOn(orderRs.getDate("updated_on"))
+                        .build();
+
+                ordersList.add(order);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ordersList;
+    }
     public List<OrdersDTO> getAllOrdersWithPurchasedProducts() {
         List<OrdersDTO> ordersList = new ArrayList<>();
         try (PreparedStatement orderStmt = conn.prepareStatement(SELECT_ALL_ORDERS_SQL);
@@ -109,7 +140,7 @@ public class OrderDbServiceImpl {
         return ordersList;
     }
 
-    private List<PurchasedProduct> getPurchasedProductsByOrderId(long orderId) {
+    public List<PurchasedProduct> getPurchasedProductsByOrderId(long orderId) {
         List<PurchasedProduct> purchasedProducts = new ArrayList<>();
         try (PreparedStatement purchasedProductStmt = conn.prepareStatement(SELECT_PURCHASED_PRODUCTS_BY_ORDER_ID_SQL)) {
 
@@ -146,18 +177,106 @@ public class OrderDbServiceImpl {
             System.out.println("Ordered On: " + order.getOrderedOn());
             System.out.println("Updated On: " + order.getUpdatedOn());
 
+            System.out.println();
             System.out.println("Purchased Products:");
+
+            System.out.printf("%-12s %-10s %-20s %-10s %-15s %-12s%n",
+                    "Purchase ID", "Product ID", "Product Name", "Quantity", "Product Price", "Total Price");
+
             for (PurchasedProduct product : order.getPurchasedProducts()) {
-                System.out.println("  - Purchase ID: " + product.getPurchaseId());
-                System.out.println("    Product ID: " + product.getProductId());
-                System.out.println("    Product Name: " + product.getProductName());
-                System.out.println("    Quantity: " + product.getQuantity());
-                System.out.println("    Product Price: " + product.getProductPrice());
-                System.out.println("    Total Price: " + product.getTotalPrice());
-                System.out.println();
+                System.out.printf("%-12s %-10s %-20s %-10d %-15.2f %-12.2f%n",
+                        product.getPurchaseId(), product.getProductId(), product.getProductName(),
+                        product.getQuantity(), product.getProductPrice(), product.getTotalPrice());
             }
             System.out.println();
         }
+    }
+
+    @Override
+    public OrdersDTO getOrderById(long orderId) {
+
+        OrdersDTO ordersDTO = null;
+        PreparedStatement preparedStatement = null;
+
+        try {
+            // Establishing a connection
+            // SQL query to fetch data of order by ID
+            String sql = "SELECT id, total_price, no_of_items, order_status, ordered_on, updated_on " +
+                    "FROM orders " +
+                    "WHERE id = ?";
+
+            // Creating a prepared statement
+            preparedStatement  = conn.prepareStatement(sql);
+            preparedStatement.setLong(1, orderId);
+
+            // Executing the query
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Processing the ResultSet
+            if (resultSet.next()) {
+                long id = resultSet.getLong("id");
+                double totalPrice = resultSet.getDouble("total_price");
+                long numberOfItems = resultSet.getLong("no_of_items");
+                String orderStatus = resultSet.getString("order_status");
+                Date orderedOn = resultSet.getDate("ordered_on");
+                Date updatedOn = resultSet.getDate("updated_on");
+
+                // Fetching purchased products associated with the order
+                List<PurchasedProduct> purchasedProducts = getPurchasedProductsByOrderId(id);
+
+                // Building OrdersDTO object
+                ordersDTO = OrdersDTO.builder()
+                        .id(id)
+                        .totalPrice(totalPrice)
+                        .numberOfItems(numberOfItems)
+                        .orderStatus(orderStatus)
+                        .orderedOn(orderedOn)
+                        .updatedOn(updatedOn)
+                        .purchasedProducts(purchasedProducts)
+                        .build();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Closing PreparedStatement and Connection
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return ordersDTO;
+    }
+
+
+    public void displayOrdersWithPurchasedProducts(OrdersDTO order) {
+
+            System.out.println("ID: " + order.getId());
+            System.out.println("Total Price: " + order.getTotalPrice());
+            System.out.println("Number of Items: " + order.getNumberOfItems());
+            System.out.println("Order Status: " + order.getOrderStatus());
+            System.out.println("Ordered On: " + order.getOrderedOn());
+            System.out.println("Updated On: " + order.getUpdatedOn());
+
+            System.out.println();
+            System.out.println("Purchased Products:");
+
+            System.out.printf("%-12s %-10s %-20s %-10s %-15s %-12s%n",
+                    "Purchase ID", "Product ID", "Product Name", "Quantity", "Product Price", "Total Price");
+
+            for (PurchasedProduct product : order.getPurchasedProducts()) {
+                System.out.printf("%-12s %-10s %-20s %-10d %-15.2f %-12.2f%n",
+                        product.getPurchaseId(), product.getProductId(), product.getProductName(),
+                        product.getQuantity(), product.getProductPrice(), product.getTotalPrice());
+            }
+            System.out.println();
     }
 
 

@@ -33,7 +33,6 @@ public class DatabaseConnection {
     public Connection connectPostgresDb() {
         try {
             conn = DriverManager.getConnection(url, user, password);
-            System.out.println("Connected to the PostgresSQL server successfully.");
             return conn;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,12 +72,12 @@ public class OrderService {
         order.setNumberOfItems(numberOfItems);
         order.setTotalPrice(totalPrice);
 
-        order.setOrderId("ORD_" + new Random().nextInt(1, 100));
+        order.setCode("ORD_" + new Random().nextInt(1, 100));
         order.setOrderedOn(new Date());
         order.setProducts(cart.getProducts());
 
         Document orderDoc = new Document();
-        orderDoc.append("orderId", order.getOrderId())
+        orderDoc.append("orderId", order.getCode())
                 .append("totalPrice", order.getTotalPrice())
                 .append("numberOfItems", order.getNumberOfItems())
                 .append("totalQuantity", order.getTotalQuantity())
@@ -139,7 +138,7 @@ public class OrderService {
     private Order convertDocumentToOrder(Document doc) {
 
         Order order = new Order();
-        order.setOrderId(doc.getString("orderId"));
+        order.setCode(doc.getString("orderId"));
         order.setTotalPrice(doc.getDouble("totalPrice"));
         order.setNumberOfItems(doc.getLong("numberOfItems"));
         order.setTotalQuantity(doc.getLong("totalQuantity"));

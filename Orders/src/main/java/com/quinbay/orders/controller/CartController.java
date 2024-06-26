@@ -1,5 +1,6 @@
 package com.quinbay.orders.controller;
 
+import com.quinbay.orders.dto.ProductRequest;
 import com.quinbay.orders.model.Cart;
 import com.quinbay.orders.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +22,13 @@ public class CartController {
         return cartService.getAllCarts();
     }
 
-    @GetMapping("/getCartById/{cartId}")
+    @GetMapping("/getById/{cartId}")
     public ResponseEntity<Cart> getCartById(@PathVariable("cartId") String cartId) {
         Cart cart = cartService.getCartById(cartId);
         return cart != null ? ResponseEntity.ok(cart) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/createCart")
+    @PostMapping("/create")
     public ResponseEntity<String> createCart() {
         String result = cartService.createCart();
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -40,7 +41,7 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @PutMapping("/updateCart")
+    @PutMapping("/update")
     public ResponseEntity<String> updateCart(@RequestBody Cart cart) {
         String result = cartService.updateCart(cart);
         return result.equals("Cart updated successfully") ?

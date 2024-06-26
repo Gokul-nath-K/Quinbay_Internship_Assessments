@@ -5,7 +5,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import com.quinbay.orders.controller.ProductRequest;
+import com.quinbay.orders.dto.ProductRequest;
 import com.quinbay.orders.dto.CategoryDTO;
 import com.quinbay.orders.dto.ProductDTO;
 import com.quinbay.orders.model.Cart;
@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -113,7 +112,7 @@ public class CartService {
     public String updateCart(Cart cart) {
 
         Document doc = convertCartToDocument(cart);
-        return cartCollection.replaceOne(Filters.eq("cartId", cart.getCartId()), doc).getModifiedCount() > 0 ?
+        return cartCollection.replaceOne(Filters.eq("cartId", cart.getCode()), doc).getModifiedCount() > 0 ?
                 "Cart updated successfully" : "Cart not found";
     }
 
@@ -141,7 +140,7 @@ public class CartService {
         }
 
         return new Document()
-                .append("cartId", cart.getCartId())
+                .append("cartId", cart.getCode())
                 .append("products", productDocs);
     }
 
@@ -155,7 +154,7 @@ public class CartService {
 
         if (productDocs == null) {
             return Cart.builder()
-                    .cartId(doc.getString("cartId"))
+                    .code(doc.getString("cartId"))
                     .products(new ArrayList<>())
                     .build();
         }
@@ -178,7 +177,7 @@ public class CartService {
 
         return Cart.builder()
                 .id(doc.getLong("id") != null ? doc.getLong("id") : 0L)
-                .cartId(doc.getString("cartId"))
+                .code(doc.getString("cartId"))
                 .products(productDTOS)
                 .build();
     }

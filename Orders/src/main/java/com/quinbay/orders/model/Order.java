@@ -16,7 +16,7 @@ import java.util.List;
 public class Order {
 
     private long id;
-    private String orderId;
+    private String code;
     private double totalPrice;
     private long numberOfItems;
     private long totalQuantity;

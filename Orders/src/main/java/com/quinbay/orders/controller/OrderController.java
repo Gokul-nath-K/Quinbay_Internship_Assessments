@@ -25,7 +25,7 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/getOrderById/{id}")
+    @GetMapping("/getById/{id}")
     public ResponseEntity<Order> getOrderDetails(@PathVariable("id") String id) {
         Order order = orderService.getOrderById(id);
         if (order == null) {

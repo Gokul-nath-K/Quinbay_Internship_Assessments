@@ -1,4 +1,4 @@
-package com.quinbay.orders.controller;
+package com.quinbay.orders.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

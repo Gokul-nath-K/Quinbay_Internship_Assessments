@@ -17,12 +17,12 @@ public class CategoryController {
         return categoryService.getAllCategories();
     }
 
-    @GetMapping("/getCategoryById/{id}")
+    @GetMapping("/getById/{id}")
     public Category getCategoryById(@PathVariable("id") long id) {
         return categoryService.getCategoryById(id);
     }
 
-    @GetMapping("/getCategoryByCategoryId/{categoryId}")
+    @GetMapping("/getByCategoryId/{categoryId}")
     public Category getCategoryByCategoryId(@PathVariable("categoryId") String categoryId) {
         return categoryService.getCategoryByCategoryId(categoryId);
     }
@@ -32,13 +32,13 @@ public class CategoryController {
         return categoryService.addCategory(category) ? "Category added successfully" : "Failed to add category";
     }
 
-    @PutMapping("/updateCategory/{id}")
+    @PutMapping("/updateById/{id}")
     public String updateCategory(@PathVariable("id") String id, @RequestBody Category category) {
 
         return categoryService.updateCategory(id, category);
     }
 
-    @DeleteMapping("/deleteCategory/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteCategory(@PathVariable("id") long id) {
         return categoryService.deleteCategory(id) ? "Deleted successfully" : "Deletion failed!";
     }

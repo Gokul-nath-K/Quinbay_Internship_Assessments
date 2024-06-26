@@ -1,30 +1,39 @@
 package com.quinbay.inventory.service;
 
 import com.quinbay.inventory.DTO.ProductRequestDTO;
+import com.quinbay.inventory.config.DataSourceConfig;
+import com.quinbay.inventory.exceptions.ProductNotFoundException;
 import com.quinbay.inventory.model.Category;
 import com.quinbay.inventory.model.Product;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ProductService {
-
-    private final String url = "jdbc:postgresql://localhost:5432/e_commerce";
-    private final String user = "gokulnathk";
-    private final String password = "password";
 
     CategoryService categoryService = new CategoryService();
 
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, user, password);
+    @Autowired
+    private DataSourceConfig dataSourceConfig;
+
+    Connection conn;
+
+    @PostConstruct
+    void Initializer() throws SQLException {
+
+        conn = dataSourceConfig.connection(dataSourceConfig.dataSource());
     }
 
     public List<Product> getAllProducts() {
         List<Product> products = new ArrayList<>();
         String query = "SELECT * FROM Product";
 
-        try (Connection conn = getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
@@ -47,8 +56,7 @@ public class ProductService {
         Product product = null;
         String query = "SELECT * FROM Product WHERE productid = ?";
 
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -65,7 +73,10 @@ public class ProductService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return product;
+        if (product == null)
+            throw new ProductNotFoundException("Product with id " + id + " not found");
+        else
+            return product;
     }
 
     public String addProduct(ProductRequestDTO newProduct) {
@@ -87,8 +98,7 @@ public class ProductService {
                 .build();
 
         String query = "INSERT INTO Product (productId, productName, productPrice, productQuantity, categoryId) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, product.getCode());
             pstmt.setString(2, product.getName());
@@ -105,8 +115,7 @@ public class ProductService {
 
     public boolean updateProduct(Product product) {
         String query = "UPDATE Product SET productId = ?, productName = ?, productPrice = ?, productQuantity = ?, categoryId = ? WHERE id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setString(1, product.getCode());
             pstmt.setString(2, product.getName());
@@ -122,83 +131,9 @@ public class ProductService {
         return false;
     }
 
-    public boolean updateProductPrice(String id, double newPrice) {
-
-        if (newPrice < 0) {
-            throw new IllegalArgumentException("Product price cannot be negative");
-        }
-
-        Product existingProduct = getProductByCode(id);
-        if (existingProduct == null) {
-            return false;
-        }
-
-        String query = "UPDATE Product SET productPrice = ? WHERE id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setDouble(1, newPrice);
-            pstmt.setString(2, id);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-
-    public boolean updateProductQuantity(Product newProduct) {
-
-        if (newProduct.getQuantity() < 0) {
-            throw new IllegalArgumentException("Product quantity cannot be less than zero");
-        }
-
-        Product existingProduct = getProductByCode(newProduct.getCode());
-        if (existingProduct == null) {
-            return false;
-        }
-
-        String query = "UPDATE Product SET productQuantity = ? WHERE productid = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setLong(1, newProduct.getQuantity());
-            pstmt.setString(2, newProduct.getCode());
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateProductQuantity(String id, long quantity) {
-
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Product quantity cannot be less than zero");
-        }
-
-        Product existingProduct = getProductByCode(id);
-        if (existingProduct == null) {
-            return false;
-        }
-
-        String query = "UPDATE Product SET productQuantity = ? WHERE productid = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-
-            pstmt.setLong(1, quantity);
-            pstmt.setString(2, id);
-            return pstmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     public boolean deleteProduct(long id) {
         String query = "DELETE FROM Product WHERE id = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
             pstmt.setLong(1, id);
             return pstmt.executeUpdate() > 0;

@@ -1,10 +1,9 @@
 package com.quinbay.orders.controller;
 
 import com.quinbay.orders.dto.ProductRequest;
-import com.quinbay.orders.model.Cart;
+import com.quinbay.orders.dao.entity.Cart;
 import com.quinbay.orders.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,45 +16,33 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @GetMapping("/getAll")
-    public List<Cart> getAllCarts() {
-        return cartService.getAllCarts();
+    @GetMapping
+    public ResponseEntity<List<Cart>> getAllCarts() {
+        List<Cart> carts = cartService.getAllCarts();
+        return ResponseEntity.ok(carts);
     }
 
-    @GetMapping("/getById/{cartId}")
-    public ResponseEntity<Cart> getCartById(@PathVariable("cartId") String cartId) {
+    @GetMapping("/{cartId}")
+    public ResponseEntity<Cart> getCartById(@PathVariable String cartId) {
         Cart cart = cartService.getCartById(cartId);
-        return cart != null ? ResponseEntity.ok(cart) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(cart);
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<String> createCart() {
-        String result = cartService.createCart();
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        String message = cartService.createCart();
+        return ResponseEntity.ok(message);
     }
 
-    @PostMapping("/addProductToCart/{cartId}")
-    public ResponseEntity<String> addProductToCart(@PathVariable("cartId") String cartId,
-                                                   @RequestBody ProductRequest productRequest) {
-        String result = cartService.addProductToCart(cartId, productRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+    @PostMapping("/{cartId}/addProduct")
+    public ResponseEntity<String> addProductToCart(@PathVariable String cartId, @RequestBody ProductRequest productRequest) {
+        String message = cartService.addProductToCart(cartId, productRequest);
+        return ResponseEntity.ok(message);
     }
 
-    @PutMapping("/update")
-    public ResponseEntity<String> updateCart(@RequestBody Cart cart) {
-        String result = cartService.updateCart(cart);
-        return result.equals("Cart updated successfully") ?
-                ResponseEntity.ok(result) : ResponseEntity.notFound().build();
+    @DeleteMapping("/{cartId}")
+    public ResponseEntity<String> clearCart(@PathVariable String cartId) {
+        cartService.clearCart(cartId);
+        return ResponseEntity.ok("Cart cleared successfully");
     }
-
-    @DeleteMapping("/clear/{cartId}")
-    public String clearCart(@PathVariable String cartId) {
-        try {
-            cartService.clearCart(cartId);
-            return "Cart cleared successfully";
-        } catch (Exception e) {
-            return "Failed to clear cart: " + e.getMessage();
-        }
-    }
-
 }

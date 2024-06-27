@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductRequest {
+public class RedisDTO {
 
-    private String code;
-    private long quantity;
+    String key;
+    String value;
 }

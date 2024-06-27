@@ -1,45 +1,49 @@
 package com.quinbay.inventory.controller;
 
+import com.quinbay.inventory.DTO.CategoryRequestDTO;
+import com.quinbay.inventory.DTO.ProductResponseDTO;
+import com.quinbay.inventory.exceptions.CategoryException;
 import com.quinbay.inventory.model.Category;
 import com.quinbay.inventory.service.CategoryService;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
 
-    private final CategoryService categoryService = new CategoryService();
+    @Autowired
+    CategoryService categoryService;
 
     @GetMapping("/getAll")
     public List<Category> getAll() {
-        return categoryService.getAllCategories();
+        return categoryService.getAll();
     }
 
-    @GetMapping("/getById/{id}")
-    public Category getCategoryById(@PathVariable("id") long id) {
-        return categoryService.getCategoryById(id);
+
+    @GetMapping("/getByCode")
+    public Category getCategoryById(@RequestParam(value = "code") String code) {
+        return Optional.ofNullable(categoryService.getByCode(code))
+                .orElseThrow(() -> new CategoryException("Category not found with code: " + code));
     }
 
-    @GetMapping("/getByCategoryId/{categoryId}")
-    public Category getCategoryByCategoryId(@PathVariable("categoryId") String categoryId) {
-        return categoryService.getCategoryByCategoryId(categoryId);
+
+    @GetMapping("/{code}/getProducts")
+    public List<ProductResponseDTO> getProduct(@PathVariable("code") String categoryCode) {
+
+        return categoryService.getProducts(categoryCode);
     }
 
     @PostMapping("/addCategory")
-    public String addCategory(@RequestBody Category category) {
-        return categoryService.addCategory(category) ? "Category added successfully" : "Failed to add category";
-    }
-
-    @PutMapping("/updateById/{id}")
-    public String updateCategory(@PathVariable("id") String id, @RequestBody Category category) {
-
-        return categoryService.updateCategory(id, category);
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public String deleteCategory(@PathVariable("id") long id) {
-        return categoryService.deleteCategory(id) ? "Deleted successfully" : "Deletion failed!";
+    public Category addCategory(@RequestBody CategoryRequestDTO category) {
+        return categoryService.addNewCategory(category);
     }
 }

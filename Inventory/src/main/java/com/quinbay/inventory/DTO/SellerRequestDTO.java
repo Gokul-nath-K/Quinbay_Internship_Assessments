@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ProductUpdateRequestDTO {
+public class SellerRequestDTO {
 
-    private String productId;
-    private long productQuantity;
+    private String name;
+    private String email;
+    private String phone_number;
 }

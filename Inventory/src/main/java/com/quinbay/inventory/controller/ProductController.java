@@ -1,6 +1,7 @@
 package com.quinbay.inventory.controller;
 
 import com.quinbay.inventory.DTO.ProductRequestDTO;
+import com.quinbay.inventory.DTO.ProductResponseDTO;
 import com.quinbay.inventory.model.Product;
 import com.quinbay.inventory.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,39 +16,33 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("/getAll")
-    public List<Product> getAll() {
+    public List<ProductResponseDTO> getAll() {
         return productService.getAllProducts();
     }
 
-    @GetMapping("/getByCode/{id}")
-    public Product getProductByCode(@PathVariable("id") String productId) {
-        return productService.getProductByCode(productId);
+    @GetMapping("/getByCode")
+    public ProductResponseDTO getByCode(@RequestParam("id") String productId) {
+        return productService.getByCode(productId);
+    }
+
+    @GetMapping("/getByProductCode")
+    public ProductResponseDTO getProductByCode(@RequestParam("id") String productId) {
+        return productService.getByCode(productId);
     }
 
     @PostMapping("/add")
-    public String addNewProduct(@RequestBody ProductRequestDTO product) {
-
-        return productService.addProduct(product);
+    public Product addNewProduct(@RequestBody ProductRequestDTO product) {
+        return productService.addNewProduct(product);
     }
 
-    @PutMapping("/updateById/{id}")
-    public Product updateById(@RequestBody Product updateProduct) {
+    @PutMapping("/update")
+    public Product update(@RequestBody ProductRequestDTO updatedProduct) {
 
-        Product existingProduct = productService.getProductByCode(updateProduct.getCode());
-        if (existingProduct != null) {
-            existingProduct.setId(updateProduct.getId());
-            existingProduct.setCode(updateProduct.getCode());
-            existingProduct.setName(updateProduct.getName());
-            existingProduct.setPrice(updateProduct.getPrice());
-            existingProduct.setCategory(updateProduct.getCategory());
-            productService.updateProduct(existingProduct);
-            return existingProduct;
-        }
-        return null;
+        return productService.update(updatedProduct);
     }
 
-    @DeleteMapping("/deleteById/{id}")
-    public String deleteProduct(@PathVariable("id") long productId) {
-        return productService.deleteProduct(productId) ? "Deleted successfully" : "Deletion failed!";
+    @DeleteMapping("/delete/{code}")
+    public String deleteProduct(@PathVariable("code") String code) {
+        return productService.deleteProduct(code) ? "Deleted successfully" : "Deletion failed!";
     }
 }

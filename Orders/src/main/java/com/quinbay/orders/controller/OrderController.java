@@ -1,9 +1,9 @@
 package com.quinbay.orders.controller;
 
-import com.quinbay.orders.model.Order;
+import com.quinbay.orders.dto.RedisDTO;
+import com.quinbay.orders.dao.entity.Order;
 import com.quinbay.orders.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,28 +15,27 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping("/placeOrder/{cartId}")
-    public ResponseEntity<String> placeOrder(@PathVariable("cartId") String cartId) {
-        try {
-            orderService.placeOrder(cartId);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to place order: " + e.getMessage());
-        }
-    }
+    @PostMapping("/redis")
+    public String addKey(@RequestBody RedisDTO redisObj) {
 
-    @GetMapping("/getById/{id}")
-    public ResponseEntity<Order> getOrderDetails(@PathVariable("id") String id) {
-        Order order = orderService.getOrderById(id);
-        if (order == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(order);
+        return orderService.addKey(redisObj);
     }
 
     @GetMapping("/getAll")
     public ResponseEntity<List<Order>> getAllOrders() {
         List<Order> orders = orderService.getAllOrders();
         return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderById(@PathVariable String orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/placeOrder/{cartId}")
+    public ResponseEntity<String> placeOrder(@PathVariable String cartId) {
+        orderService.placeOrder(cartId);
+        return ResponseEntity.ok("Order placed successfully");
     }
 }
